@@ -1,0 +1,15 @@
+# Build
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Gizli yapılandırma (veritabanı bağlantı bilgileri) - repoya eklenmez
+application.properties
+.env
+
+# OS
+.DS_Store
+Thumbs.db

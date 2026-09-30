@@ -1,0 +1,5 @@
+# Bu dosyayı aynı klasöre "application.properties" adıyla kopyalayıp kendi bilgilerinizi girin.
+# application.properties .gitignore içindedir, repoya eklenmez.
+db.url=jdbc:postgresql://localhost:5432/expense_tracker
+db.username=postgres
+db.password=CHANGE_ME
