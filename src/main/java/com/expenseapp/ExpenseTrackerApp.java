@@ -3,7 +3,9 @@ package com.expenseapp;
 import com.expenseapp.config.DatabaseConfig;
 import com.expenseapp.config.DatabaseInitializer;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
@@ -13,30 +15,27 @@ public class ExpenseTrackerApp extends Application {
 
     @Override
     public void start(Stage stage) {
-        // Gün 1: yalnızca veritabanı bağlantısını doğrulayan geçici ekran.
-        // Gün 2'de login.fxml ile değiştirilecek.
-        Label status = new Label(checkDatabase());
-        status.setWrapText(true);
-
-        VBox root = new VBox(status);
-        root.setPadding(new Insets(20));
-
-        stage.setTitle("Kişisel Harcama Takip");
-        stage.setScene(new Scene(root, 480, 160));
-        stage.show();
-    }
-
-    private String checkDatabase() {
+        Parent root;
         try {
             DatabaseConfig.testConnection();
             DatabaseInitializer.initialize();
-            String message = "PostgreSQL bağlantısı başarılı (SELECT 1). Tablolar hazır.";
-            System.out.println(message);
-            return message;
+            root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
         } catch (Exception e) {
             String message = "Veritabanı bağlantısı başarısız: " + e.getMessage();
             System.err.println(message);
-            return message;
+            Label status = new Label(message);
+            status.setWrapText(true);
+            VBox box = new VBox(status);
+            box.setPadding(new Insets(20));
+            root = box;
         }
+
+        // Ekran geçişlerinde yalnızca root değiştiği için stil dosyası tüm ekranlarda geçerli kalır.
+        Scene scene = new Scene(root, 400, 420);
+        scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+
+        stage.setTitle("Kişisel Harcama Takip");
+        stage.setScene(scene);
+        stage.show();
     }
 }

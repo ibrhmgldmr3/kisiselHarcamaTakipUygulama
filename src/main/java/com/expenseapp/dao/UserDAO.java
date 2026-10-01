@@ -35,7 +35,7 @@ public class UserDAO {
     }
 
     /** Kullanıcıyı ekler; oluşan id ve created_at değerlerini nesneye yazar. */
-    public User insert(User user) throws SQLException {
+    public User createUser(User user) throws SQLException {
         String sql = "INSERT INTO users (username, password_hash) VALUES (?, ?) RETURNING id, created_at";
         try (Connection connection = DatabaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {

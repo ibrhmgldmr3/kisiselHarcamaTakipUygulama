@@ -1,0 +1,16 @@
+.form {
+    -fx-padding: 24;
+}
+
+.title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.error-label {
+    -fx-text-fill: #c62828;
+}
+
+.success-label {
+    -fx-text-fill: #2e7d32;
+}
