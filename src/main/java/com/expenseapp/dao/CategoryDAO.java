@@ -29,7 +29,7 @@ public class CategoryDAO {
         }
     }
 
-    public Optional<Category> findByIdAndUserId(long id, long userId) throws SQLException {
+    public Optional<Category> findById(long id, long userId) throws SQLException {
         String sql = "SELECT id, user_id, name FROM categories WHERE id = ? AND user_id = ?";
         try (Connection connection = DatabaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -42,7 +42,7 @@ public class CategoryDAO {
     }
 
     /** Kategoriyi ekler; oluşan id değerini nesneye yazar. */
-    public Category insert(Category category) throws SQLException {
+    public Category create(Category category) throws SQLException {
         String sql = "INSERT INTO categories (user_id, name) VALUES (?, ?) RETURNING id";
         try (Connection connection = DatabaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -53,6 +53,29 @@ public class CategoryDAO {
                 category.setId(rs.getLong("id"));
                 return category;
             }
+        }
+    }
+
+    /** @return kayıt güncellendiyse true; kategori yoksa veya başka kullanıcıya aitse false */
+    public boolean update(Category category) throws SQLException {
+        String sql = "UPDATE categories SET name = ? WHERE id = ? AND user_id = ?";
+        try (Connection connection = DatabaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, category.getName());
+            ps.setLong(2, category.getId());
+            ps.setLong(3, category.getUserId());
+            return ps.executeUpdate() == 1;
+        }
+    }
+
+    /** @return kayıt silindiyse true; kategori yoksa veya başka kullanıcıya aitse false */
+    public boolean delete(long id, long userId) throws SQLException {
+        String sql = "DELETE FROM categories WHERE id = ? AND user_id = ?";
+        try (Connection connection = DatabaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            ps.setLong(2, userId);
+            return ps.executeUpdate() == 1;
         }
     }
 

@@ -44,7 +44,7 @@ public class ExpenseDAO {
         }
     }
 
-    public Optional<Expense> findByIdAndUserId(long id, long userId) throws SQLException {
+    public Optional<Expense> findById(long id, long userId) throws SQLException {
         String sql = SELECT_COLUMNS + " WHERE e.id = ? AND e.user_id = ?";
         try (Connection connection = DatabaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -57,7 +57,7 @@ public class ExpenseDAO {
     }
 
     /** Harcamayı ekler; oluşan id ve zaman damgalarını nesneye yazar. */
-    public Expense insert(Expense expense) throws SQLException {
+    public Expense create(Expense expense) throws SQLException {
         String sql = """
                 INSERT INTO expenses (user_id, category_id, expense_date, description,
                                       amount, currency, exchange_rate, amount_try)

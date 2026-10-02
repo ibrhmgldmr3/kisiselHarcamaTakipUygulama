@@ -24,14 +24,19 @@ CREATE TABLE IF NOT EXISTS expenses (
     description   VARCHAR(255)  NOT NULL,
     amount        NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
     currency      VARCHAR(3)    NOT NULL CHECK (currency IN ('TRY', 'USD', 'EUR')),
-    exchange_rate NUMERIC(12, 6) NOT NULL CHECK (exchange_rate > 0),
-    amount_try    NUMERIC(14, 2) NOT NULL CHECK (amount_try > 0),
+    -- Kur ve TL karşılığı Currency API ile doldurulacak; şimdilik yabancı para birimlerinde boş kalabilir
+    exchange_rate NUMERIC(12, 6) CHECK (exchange_rate > 0),
+    amount_try    NUMERIC(14, 2) CHECK (amount_try > 0),
     created_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- Harcamanın kategorisi aynı kullanıcıya ait olmak zorunda
     CONSTRAINT fk_expenses_category_same_user
         FOREIGN KEY (category_id, user_id) REFERENCES categories (id, user_id)
 );
+
+-- Önceki sürümde NOT NULL olarak oluşturulmuş tablolar için (tekrar çalıştırmak güvenlidir)
+ALTER TABLE expenses ALTER COLUMN exchange_rate DROP NOT NULL;
+ALTER TABLE expenses ALTER COLUMN amount_try DROP NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories (user_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_user_id ON expenses (user_id);

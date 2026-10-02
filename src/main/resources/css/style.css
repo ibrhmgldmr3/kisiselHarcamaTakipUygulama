@@ -14,3 +14,7 @@
 .success-label {
     -fx-text-fill: #2e7d32;
 }
+
+.amount-column {
+    -fx-alignment: CENTER-RIGHT;
+}

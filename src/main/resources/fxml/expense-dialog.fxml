@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.expenseapp.controller.ExpenseDialogController"
+      styleClass="form" spacing="8" prefWidth="340">
+
+    <Label text="Tarih"/>
+    <DatePicker fx:id="datePicker" maxWidth="Infinity"/>
+
+    <Label text="Açıklama"/>
+    <TextField fx:id="descriptionField"/>
+
+    <Label text="Kategori"/>
+    <ComboBox fx:id="categoryComboBox" maxWidth="Infinity"/>
+
+    <Label text="Tutar"/>
+    <TextField fx:id="amountField"/>
+
+    <Label text="Para Birimi"/>
+    <ComboBox fx:id="currencyComboBox" maxWidth="Infinity"/>
+
+    <Label fx:id="messageLabel" styleClass="error-label" wrapText="true"/>
+
+    <HBox spacing="8" alignment="CENTER_RIGHT">
+        <Button text="İptal" onAction="#handleCancel" cancelButton="true"/>
+        <Button text="Kaydet" onAction="#handleSave" defaultButton="true"/>
+    </HBox>
+</VBox>

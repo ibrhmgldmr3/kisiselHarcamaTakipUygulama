@@ -9,6 +9,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -29,7 +30,14 @@ public class LoginController {
         try {
             User user = authService.login(usernameField.getText(), passwordField.getText());
             SessionManager.setCurrentUser(user);
-            navigateTo("/fxml/dashboard.fxml");
+            // Ekran değişince usernameField sahneden ayrılacağı için pencere önceden alınır.
+            Stage stage = (Stage) usernameField.getScene().getWindow();
+            if (navigateTo("/fxml/dashboard.fxml")) {
+                // Harcama tablosu için giriş ekranından daha geniş bir pencere gerekir.
+                stage.setWidth(900);
+                stage.setHeight(600);
+                stage.centerOnScreen();
+            }
         } catch (IllegalArgumentException e) {
             messageLabel.setText(e.getMessage());
         } catch (SQLException e) {
@@ -42,12 +50,15 @@ public class LoginController {
         navigateTo("/fxml/register.fxml");
     }
 
-    private void navigateTo(String fxmlPath) {
+    /** @return ekran yüklendiyse true */
+    private boolean navigateTo(String fxmlPath) {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
             usernameField.getScene().setRoot(root);
+            return true;
         } catch (IOException e) {
             messageLabel.setText("Screen could not be loaded: " + fxmlPath);
+            return false;
         }
     }
 }
