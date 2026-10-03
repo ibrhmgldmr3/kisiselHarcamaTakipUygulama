@@ -30,6 +30,11 @@ public final class DatabaseConfig {
                 props.getProperty("db.password"));
     }
 
+    /** application.properties içindeki diğer ayarları (ör. currency.api.url) okur; yoksa null döner. */
+    public static String getProperty(String key) {
+        return getProperties().getProperty(key);
+    }
+
     /** Bağlantıyı "SELECT 1" ile doğrular; başarısızsa SQLException fırlatır. */
     public static void testConnection() throws SQLException {
         try (Connection connection = getConnection();

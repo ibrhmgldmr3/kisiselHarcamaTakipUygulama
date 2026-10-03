@@ -10,11 +10,12 @@
     <name>Kişisel Harcama Takip Uygulaması</name>
 
     <properties>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>21.0.5</javafx.version>
         <postgresql.version>42.7.12</postgresql.version>
         <jbcrypt.version>0.4</jbcrypt.version>
+        <jackson.version>2.19.0</jackson.version>
         <main.class>com.expenseapp.Main</main.class>
     </properties>
 
@@ -38,6 +39,11 @@
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>${jbcrypt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
     </dependencies>
 

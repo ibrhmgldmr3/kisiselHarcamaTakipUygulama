@@ -14,6 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -106,6 +107,9 @@ public class ExpenseDialogController {
             saved = true;
             close();
         } catch (IllegalArgumentException e) {
+            messageLabel.setText(e.getMessage());
+        } catch (IOException e) {
+            // Döviz kuru alınamadı; pencere açık kalır, kullanıcı tekrar deneyebilir.
             messageLabel.setText(e.getMessage());
         } catch (SQLException e) {
             messageLabel.setText("Database error: " + e.getMessage());

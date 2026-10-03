@@ -3,10 +3,10 @@ package com.expenseapp.service;
 import com.expenseapp.dao.CategoryDAO;
 import com.expenseapp.dao.ExpenseDAO;
 import com.expenseapp.model.Category;
-import com.expenseapp.model.Currency;
 import com.expenseapp.model.Expense;
 import com.expenseapp.util.ValidationUtil;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Harcama ve kategori işlemleri. Her metot userId alır ve işlemi o kullanıcıyla sınırlar.
  * Doğrulama hataları, kullanıcıya gösterilecek mesajla birlikte IllegalArgumentException
- * olarak fırlatılır; veritabanı hataları SQLException olarak iletilir.
+ * olarak fırlatılır; veritabanı hataları SQLException, döviz kuru hataları IOException olarak iletilir.
  */
 public class ExpenseService {
 
@@ -27,9 +27,15 @@ public class ExpenseService {
 
     private final ExpenseDAO expenseDAO = new ExpenseDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
+    private final CurrencyService currencyService = new CurrencyService();
 
     public List<Expense> getUserExpenses(long userId) throws SQLException {
         return expenseDAO.findAllByUserId(userId);
+    }
+
+    /** Kullanıcının tüm harcamalarının TL karşılıklarının (amount_try) toplamı. */
+    public BigDecimal getUserTotalTry(long userId) throws SQLException {
+        return expenseDAO.getTotalTryByUserId(userId);
     }
 
     /** Kullanıcının kategorilerini döndürür; hiç kategorisi yoksa önce varsayılanları oluşturur. */
@@ -44,14 +50,14 @@ public class ExpenseService {
         return categoryDAO.findAllByUserId(userId);
     }
 
-    public Expense createExpense(Expense expense, long userId) throws SQLException {
+    public Expense createExpense(Expense expense, long userId) throws SQLException, IOException {
         expense.setUserId(userId);
         validate(expense);
         applyTryConversion(expense);
         return expenseDAO.create(expense);
     }
 
-    public void updateExpense(Expense expense, long userId) throws SQLException {
+    public void updateExpense(Expense expense, long userId) throws SQLException, IOException {
         expense.setUserId(userId);
         if (expense.getId() == null) {
             throw new IllegalArgumentException(EXPENSE_NOT_FOUND);
@@ -100,16 +106,12 @@ public class ExpenseService {
     }
 
     /**
-     * TRY harcamalarında kur 1'dir. Diğer para birimlerinin kuru Currency API eklenene kadar
-     * boş bırakılır.
+     * Güncel kuru CurrencyService'ten alıp exchange_rate ve amount_try alanlarını doldurur.
+     * Ekleme ve düzenlemede her seferinde yeniden hesaplanır.
      */
-    private void applyTryConversion(Expense expense) {
-        if (expense.getCurrency() == Currency.TRY) {
-            expense.setExchangeRate(BigDecimal.ONE);
-            expense.setAmountTry(expense.getAmount());
-        } else {
-            expense.setExchangeRate(null);
-            expense.setAmountTry(null);
-        }
+    private void applyTryConversion(Expense expense) throws IOException {
+        BigDecimal rate = currencyService.getExchangeRate(expense.getCurrency());
+        expense.setExchangeRate(rate);
+        expense.setAmountTry(currencyService.convertToTry(expense.getAmount(), rate));
     }
 }

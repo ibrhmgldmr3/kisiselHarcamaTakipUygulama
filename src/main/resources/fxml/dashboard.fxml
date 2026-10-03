@@ -25,6 +25,11 @@
         <Button fx:id="deleteButton" text="Sil" onAction="#handleDelete"/>
     </HBox>
 
+    <VBox>
+        <Label text="TOTAL SPENDING"/>
+        <Label fx:id="totalLabel" styleClass="total-label"/>
+    </VBox>
+
     <TableView fx:id="expenseTable" VBox.vgrow="ALWAYS">
         <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

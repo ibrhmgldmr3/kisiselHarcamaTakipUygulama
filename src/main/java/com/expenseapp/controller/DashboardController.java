@@ -24,12 +24,17 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.function.Function;
 
 public class DashboardController {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    /** TL tutarları ₺1,889.80 biçiminde gösterilir. */
+    private static final DecimalFormat TRY_FORMAT = new DecimalFormat("₺#,##0.00", DecimalFormatSymbols.getInstance(Locale.US));
 
     @FXML
     private Label welcomeLabel;
@@ -52,6 +57,8 @@ public class DashboardController {
     @FXML
     private TableColumn<Expense, String> amountTryColumn;
     @FXML
+    private Label totalLabel;
+    @FXML
     private Label messageLabel;
 
     private final ExpenseService expenseService = new ExpenseService();
@@ -66,8 +73,7 @@ public class DashboardController {
         bindColumn(categoryColumn, Expense::getCategoryName);
         bindColumn(amountColumn, e -> formatAmount(e.getAmount()));
         bindColumn(currencyColumn, e -> e.getCurrency().name());
-        // Yabancı para birimlerinde TL karşılığı Currency API eklenene kadar boştur.
-        bindColumn(amountTryColumn, e -> formatAmount(e.getAmountTry()));
+        bindColumn(amountTryColumn, e -> formatTry(e.getAmountTry()));
 
         // Satıra çift tıklama düzenleme penceresini açar.
         expenseTable.setRowFactory(table -> {
@@ -90,6 +96,7 @@ public class DashboardController {
         try {
             long userId = SessionManager.getCurrentUser().getId();
             expenseTable.setItems(FXCollections.observableArrayList(expenseService.getUserExpenses(userId)));
+            totalLabel.setText(formatTry(expenseService.getUserTotalTry(userId)));
             messageLabel.setText("");
         } catch (SQLException e) {
             messageLabel.setText("Database error: " + e.getMessage());
@@ -185,5 +192,9 @@ public class DashboardController {
 
     private static String formatAmount(BigDecimal amount) {
         return amount == null ? "" : amount.toPlainString();
+    }
+
+    private static String formatTry(BigDecimal amount) {
+        return amount == null ? "" : TRY_FORMAT.format(amount);
     }
 }
