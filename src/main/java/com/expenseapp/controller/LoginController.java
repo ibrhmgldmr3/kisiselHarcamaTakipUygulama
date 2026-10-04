@@ -34,8 +34,8 @@ public class LoginController {
             Stage stage = (Stage) usernameField.getScene().getWindow();
             if (navigateTo("/fxml/dashboard.fxml")) {
                 // Harcama tablosu için giriş ekranından daha geniş bir pencere gerekir.
-                stage.setWidth(900);
-                stage.setHeight(600);
+                stage.setWidth(960);
+                stage.setHeight(640);
                 stage.centerOnScreen();
             }
         } catch (IllegalArgumentException e) {

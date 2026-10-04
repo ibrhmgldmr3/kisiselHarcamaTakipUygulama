@@ -12,10 +12,10 @@ public final class ValidationUtil {
 
     public static String validateLogin(String username, String password) {
         if (isBlank(username)) {
-            return "Username is required.";
+            return "Username cannot be empty.";
         }
         if (isBlank(password)) {
-            return "Password is required.";
+            return "Password cannot be empty.";
         }
         return null;
     }
@@ -26,7 +26,7 @@ public final class ValidationUtil {
             return error;
         }
         if (isBlank(confirmPassword)) {
-            return "Confirm password is required.";
+            return "Confirm password cannot be empty.";
         }
         if (!password.equals(confirmPassword)) {
             return "Passwords do not match.";

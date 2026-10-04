@@ -66,7 +66,7 @@ public class DashboardController {
     @FXML
     private void initialize() {
         User user = SessionManager.getCurrentUser();
-        welcomeLabel.setText("Welcome, " + user.getUsername());
+        welcomeLabel.setText(user.getUsername());
 
         bindColumn(dateColumn, e -> e.getExpenseDate().format(DATE_FORMAT));
         bindColumn(descriptionColumn, Expense::getDescription);
@@ -92,6 +92,7 @@ public class DashboardController {
         refreshExpenses();
     }
 
+    /** Tabloyu ve Total Spending değerini veritabanından yeniden yükler; her ekleme/düzenleme/silmeden sonra çağrılır. */
     public void refreshExpenses() {
         try {
             long userId = SessionManager.getCurrentUser().getId();
@@ -123,12 +124,12 @@ public class DashboardController {
             return;
         }
 
-        ButtonType cancel = new ButtonType("İptal", ButtonBar.ButtonData.CANCEL_CLOSE);
-        ButtonType delete = new ButtonType("Sil", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType delete = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "Bu harcamayı silmek istediğinize emin misiniz?", cancel, delete);
+                "Are you sure you want to delete this expense?", cancel, delete);
         confirm.initOwner(expenseTable.getScene().getWindow());
-        confirm.setTitle("Harcamayı Sil");
+        confirm.setTitle("Delete Expense");
         confirm.setHeaderText(null);
         if (confirm.showAndWait().orElse(cancel) != delete) {
             return;
@@ -152,8 +153,8 @@ public class DashboardController {
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
             Stage stage = (Stage) expenseTable.getScene().getWindow();
             expenseTable.getScene().setRoot(root);
-            stage.setWidth(400);
-            stage.setHeight(420);
+            stage.setWidth(460);
+            stage.setHeight(600);
             stage.centerOnScreen();
         } catch (IOException e) {
             messageLabel.setText("Login screen could not be loaded.");
@@ -171,7 +172,7 @@ public class DashboardController {
             Stage dialog = new Stage();
             dialog.initOwner(expenseTable.getScene().getWindow());
             dialog.initModality(Modality.WINDOW_MODAL);
-            dialog.setTitle(expense == null ? "Harcama Ekle" : "Harcamayı Düzenle");
+            dialog.setTitle(controller.getTitle());
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
             dialog.setScene(scene);

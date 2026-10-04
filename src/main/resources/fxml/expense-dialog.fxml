@@ -4,33 +4,43 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.expenseapp.controller.ExpenseDialogController"
-      styleClass="form" spacing="8" prefWidth="340">
+      styleClass="dialog-form" prefWidth="360">
 
-    <Label text="Tarih"/>
-    <DatePicker fx:id="datePicker" maxWidth="Infinity"/>
+    <Label fx:id="titleLabel" text="Add Expense" styleClass="dialog-title"/>
 
-    <Label text="Açıklama"/>
-    <TextField fx:id="descriptionField"/>
+    <VBox fx:id="formBox" spacing="8">
+        <Label text="Date" styleClass="field-label"/>
+        <DatePicker fx:id="datePicker" maxWidth="Infinity"/>
 
-    <Label text="Kategori"/>
-    <ComboBox fx:id="categoryComboBox" maxWidth="Infinity"/>
+        <Label text="Description" styleClass="field-label"/>
+        <TextField fx:id="descriptionField"/>
 
-    <Label text="Tutar"/>
-    <TextField fx:id="amountField"/>
+        <Label text="Category" styleClass="field-label"/>
+        <ComboBox fx:id="categoryComboBox" maxWidth="Infinity" promptText="Select category"/>
 
-    <Label text="Para Birimi"/>
-    <ComboBox fx:id="currencyComboBox" maxWidth="Infinity"/>
+        <Label text="Amount" styleClass="field-label"/>
+        <TextField fx:id="amountField"/>
 
-    <Label fx:id="messageLabel" styleClass="error-label" wrapText="true"/>
+        <Label text="Currency" styleClass="field-label"/>
+        <ComboBox fx:id="currencyComboBox" maxWidth="Infinity"/>
+    </VBox>
 
-    <HBox spacing="8" alignment="CENTER_RIGHT">
-        <Button text="İptal" onAction="#handleCancel" cancelButton="true"/>
-        <Button text="Kaydet" onAction="#handleSave" defaultButton="true"/>
+    <HBox fx:id="loadingBox" spacing="8" alignment="CENTER_LEFT" visible="false">
+        <ProgressIndicator prefWidth="20" prefHeight="20"/>
+        <Label fx:id="loadingLabel" styleClass="loading-label"/>
+    </HBox>
+
+    <Label fx:id="messageLabel" styleClass="error-label" wrapText="true" minHeight="-Infinity"/>
+
+    <HBox fx:id="buttonBox" spacing="8" alignment="CENTER_RIGHT">
+        <Button text="Cancel" onAction="#handleCancel" cancelButton="true" styleClass="secondary-button"/>
+        <Button text="Save" onAction="#handleSave" defaultButton="true" styleClass="primary-button"/>
     </HBox>
 </VBox>

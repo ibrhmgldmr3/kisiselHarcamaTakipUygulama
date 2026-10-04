@@ -9,43 +9,44 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.expenseapp.controller.DashboardController"
-      styleClass="form" spacing="8">
+      fx:controller="com.expenseapp.controller.DashboardController">
 
-    <HBox spacing="8" alignment="CENTER_LEFT">
-        <Label text="Dashboard" styleClass="title"/>
+    <HBox styleClass="header">
+        <Label text="Expense Tracker" styleClass="header-title"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="welcomeLabel"/>
-        <Button text="Logout" onAction="#handleLogout"/>
+        <Label fx:id="welcomeLabel" styleClass="header-user"/>
+        <Button text="Logout" onAction="#handleLogout" styleClass="secondary-button"/>
     </HBox>
 
-    <HBox spacing="8">
-        <Button text="+ Harcama Ekle" onAction="#handleAdd"/>
-        <Button fx:id="editButton" text="Düzenle" onAction="#handleEdit"/>
-        <Button fx:id="deleteButton" text="Sil" onAction="#handleDelete"/>
-    </HBox>
+    <VBox styleClass="dashboard-content" VBox.vgrow="ALWAYS">
+        <VBox styleClass="total-card">
+            <Label text="TOTAL SPENDING" styleClass="total-caption"/>
+            <Label fx:id="totalLabel" styleClass="total-amount"/>
+        </VBox>
 
-    <VBox>
-        <Label text="TOTAL SPENDING"/>
-        <Label fx:id="totalLabel" styleClass="total-label"/>
+        <HBox spacing="8" alignment="CENTER_RIGHT">
+            <Button fx:id="editButton" text="Edit" onAction="#handleEdit" styleClass="secondary-button"/>
+            <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete" styleClass="danger-button"/>
+            <Button text="+ Add Expense" onAction="#handleAdd" styleClass="primary-button"/>
+        </HBox>
+
+        <TableView fx:id="expenseTable" VBox.vgrow="ALWAYS">
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+            <placeholder>
+                <Label text="No expenses yet."/>
+            </placeholder>
+            <columns>
+                <TableColumn fx:id="dateColumn" text="Date"/>
+                <TableColumn fx:id="descriptionColumn" text="Description"/>
+                <TableColumn fx:id="categoryColumn" text="Category"/>
+                <TableColumn fx:id="amountColumn" text="Amount" styleClass="amount-column"/>
+                <TableColumn fx:id="currencyColumn" text="Currency"/>
+                <TableColumn fx:id="amountTryColumn" text="TRY" styleClass="amount-column"/>
+            </columns>
+        </TableView>
+
+        <Label fx:id="messageLabel" styleClass="error-label" wrapText="true"/>
     </VBox>
-
-    <TableView fx:id="expenseTable" VBox.vgrow="ALWAYS">
-        <columnResizePolicy>
-            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-        </columnResizePolicy>
-        <placeholder>
-            <Label text="Henüz harcama yok."/>
-        </placeholder>
-        <columns>
-            <TableColumn fx:id="dateColumn" text="Date"/>
-            <TableColumn fx:id="descriptionColumn" text="Description"/>
-            <TableColumn fx:id="categoryColumn" text="Category"/>
-            <TableColumn fx:id="amountColumn" text="Amount" styleClass="amount-column"/>
-            <TableColumn fx:id="currencyColumn" text="Currency"/>
-            <TableColumn fx:id="amountTryColumn" text="TRY" styleClass="amount-column"/>
-        </columns>
-    </TableView>
-
-    <Label fx:id="messageLabel" styleClass="error-label" wrapText="true"/>
 </VBox>

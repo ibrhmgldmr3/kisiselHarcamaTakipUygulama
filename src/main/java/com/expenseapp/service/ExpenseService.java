@@ -23,7 +23,7 @@ public class ExpenseService {
     private static final int MAX_DESCRIPTION_LENGTH = 255;
     /** expenses.amount NUMERIC(12, 2) sütununa sığabilecek en büyük değerin üst sınırı. */
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("10000000000");
-    private static final String EXPENSE_NOT_FOUND = "Harcama bulunamadı.";
+    private static final String EXPENSE_NOT_FOUND = "Expense not found.";
 
     private final ExpenseDAO expenseDAO = new ExpenseDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
@@ -77,31 +77,31 @@ public class ExpenseService {
 
     private void validate(Expense expense) throws SQLException {
         if (expense.getExpenseDate() == null) {
-            throw new IllegalArgumentException("Geçerli bir tarih girin.");
+            throw new IllegalArgumentException("Please enter a valid date.");
         }
         if (ValidationUtil.isBlank(expense.getDescription())) {
-            throw new IllegalArgumentException("Açıklama boş olamaz.");
+            throw new IllegalArgumentException("Description cannot be empty.");
         }
         expense.setDescription(expense.getDescription().trim());
         if (expense.getDescription().length() > MAX_DESCRIPTION_LENGTH) {
-            throw new IllegalArgumentException("Açıklama en fazla " + MAX_DESCRIPTION_LENGTH + " karakter olabilir.");
+            throw new IllegalArgumentException("Description cannot exceed " + MAX_DESCRIPTION_LENGTH + " characters.");
         }
         if (expense.getCategoryId() == null
                 || categoryDAO.findById(expense.getCategoryId(), expense.getUserId()).isEmpty()) {
-            throw new IllegalArgumentException("Geçerli bir kategori seçin.");
+            throw new IllegalArgumentException("Please select a category.");
         }
         BigDecimal amount = expense.getAmount();
         if (amount == null || amount.signum() <= 0) {
-            throw new IllegalArgumentException("Tutar 0'dan büyük olmalı.");
+            throw new IllegalArgumentException("Amount must be greater than zero.");
         }
         if (amount.stripTrailingZeros().scale() > 2) {
-            throw new IllegalArgumentException("Tutar en fazla 2 ondalık basamak içerebilir.");
+            throw new IllegalArgumentException("Amount can have at most 2 decimal places.");
         }
         if (amount.compareTo(MAX_AMOUNT) >= 0) {
-            throw new IllegalArgumentException("Tutar çok büyük.");
+            throw new IllegalArgumentException("Amount is too large.");
         }
         if (expense.getCurrency() == null) {
-            throw new IllegalArgumentException("Para birimi seçin.");
+            throw new IllegalArgumentException("Please select a currency.");
         }
     }
 

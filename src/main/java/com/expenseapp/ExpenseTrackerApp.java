@@ -31,7 +31,7 @@ public class ExpenseTrackerApp extends Application {
         }
 
         // Ekran geçişlerinde yalnızca root değiştiği için stil dosyası tüm ekranlarda geçerli kalır.
-        Scene scene = new Scene(root, 400, 420);
+        Scene scene = new Scene(root, 440, 560);
         scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
 
         stage.setTitle("Kişisel Harcama Takip");
