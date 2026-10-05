@@ -13,8 +13,12 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LoginController {
+
+    private static final Logger LOGGER = Logger.getLogger(LoginController.class.getName());
 
     @FXML
     private TextField usernameField;
@@ -41,7 +45,8 @@ public class LoginController {
         } catch (IllegalArgumentException e) {
             messageLabel.setText(e.getMessage());
         } catch (SQLException e) {
-            messageLabel.setText("Database error: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Giriş sırasında veritabanı hatası", e);
+            messageLabel.setText("Unable to log in. Please try again later.");
         }
     }
 

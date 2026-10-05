@@ -22,7 +22,10 @@ public class AuthService {
     private final UserDAO userDAO = new UserDAO();
 
     public User register(String username, String password) throws SQLException {
-        String error = ValidationUtil.validateLogin(username, password);
+        String error = ValidationUtil.validateUsername(username);
+        if (error == null) {
+            error = ValidationUtil.validatePassword(password);
+        }
         if (error != null) {
             throw new IllegalArgumentException(error);
         }

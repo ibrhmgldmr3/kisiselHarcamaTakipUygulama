@@ -28,6 +28,7 @@
             <Button fx:id="editButton" text="Edit" onAction="#handleEdit" styleClass="secondary-button"/>
             <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete" styleClass="danger-button"/>
             <Button text="+ Add Expense" onAction="#handleAdd" styleClass="primary-button"/>
+            <Button text="Export CSV" onAction="#handleExport" styleClass="secondary-button"/>
         </HBox>
 
         <TableView fx:id="expenseTable" VBox.vgrow="ALWAYS">

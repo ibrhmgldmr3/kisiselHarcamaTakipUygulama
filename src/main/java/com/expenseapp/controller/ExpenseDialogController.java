@@ -3,6 +3,7 @@ package com.expenseapp.controller;
 import com.expenseapp.model.Category;
 import com.expenseapp.model.Currency;
 import com.expenseapp.model.Expense;
+import com.expenseapp.service.CurrencyApiException;
 import com.expenseapp.service.ExpenseService;
 import com.expenseapp.util.SessionManager;
 import com.expenseapp.util.ValidationUtil;
@@ -18,11 +19,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Harcama ekleme ve düzenleme penceresi. Kaydetme (kur API çağrısı dahil) arka planda bir Task ile
@@ -30,6 +31,8 @@ import java.time.format.DateTimeParseException;
  */
 public class ExpenseDialogController {
 
+    private static final Logger LOGGER = Logger.getLogger(ExpenseDialogController.class.getName());
+    private static final String DATABASE_ERROR = "A database error occurred. Please try again later.";
     private static final String ADD_TITLE = "Add Expense";
     private static final String EDIT_TITLE = "Edit Expense";
 
@@ -74,7 +77,8 @@ public class ExpenseDialogController {
             long userId = SessionManager.getCurrentUser().getId();
             categoryComboBox.setItems(FXCollections.observableArrayList(expenseService.getUserCategories(userId)));
         } catch (SQLException e) {
-            messageLabel.setText("Database error: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Kategoriler yüklenemedi", e);
+            messageLabel.setText(DATABASE_ERROR);
         }
     }
 
@@ -166,8 +170,9 @@ public class ExpenseDialogController {
         }
         expense.setExpenseDate(date);
 
-        if (ValidationUtil.isBlank(descriptionField.getText())) {
-            return fail("Description cannot be empty.");
+        String error = ValidationUtil.validateDescription(descriptionField.getText());
+        if (error != null) {
+            return fail(error);
         }
         expense.setDescription(descriptionField.getText());
 
@@ -177,19 +182,11 @@ public class ExpenseDialogController {
         }
         expense.setCategoryId(category.getId());
 
-        if (ValidationUtil.isBlank(amountField.getText())) {
-            return fail("Amount cannot be empty.");
+        error = ValidationUtil.validateAmount(amountField.getText());
+        if (error != null) {
+            return fail(error);
         }
-        BigDecimal amount;
-        try {
-            amount = parseAmount();
-        } catch (NumberFormatException e) {
-            return fail("Amount must be a valid number.");
-        }
-        if (amount.signum() <= 0) {
-            return fail("Amount must be greater than zero.");
-        }
-        expense.setAmount(amount);
+        expense.setAmount(ValidationUtil.parseAmount(amountField.getText()));
 
         if (currencyComboBox.getValue() == null) {
             return fail("Please select a currency.");
@@ -211,13 +208,19 @@ public class ExpenseDialogController {
 
     /** Arka plandaki hatayı stack trace göstermeden anlaşılır bir mesaja çevirir. */
     private static String toUserMessage(Throwable error) {
-        if (error instanceof IllegalArgumentException || error instanceof IOException) {
-            // Doğrulama hatası veya "Döviz kuru alınamadı..." mesajı; kullanıcı tekrar deneyebilir.
+        if (error instanceof IllegalArgumentException) {
+            return error.getMessage();
+        }
+        if (error instanceof CurrencyApiException) {
+            // "Döviz kuru alınamadı..." mesajı; asıl neden (timeout, HTTP 500, bozuk JSON) loglanır.
+            LOGGER.log(Level.WARNING, "Döviz kuru alınamadı", error);
             return error.getMessage();
         }
         if (error instanceof SQLException) {
-            return "Database error: " + error.getMessage();
+            LOGGER.log(Level.SEVERE, "Harcama kaydedilemedi", error);
+            return DATABASE_ERROR;
         }
+        LOGGER.log(Level.SEVERE, "Harcama kaydedilirken beklenmeyen hata", error);
         return "An unexpected error occurred. Please try again.";
     }
 
@@ -241,11 +244,6 @@ public class ExpenseDialogController {
         LocalDate date = datePicker.getConverter().fromString(text.trim());
         datePicker.setValue(date);
         return date;
-    }
-
-    /** Ondalık ayırıcı olarak virgül de kabul edilir (ör. 12,50). */
-    private BigDecimal parseAmount() {
-        return new BigDecimal(amountField.getText().trim().replace(',', '.'));
     }
 
     private Stage getStage() {

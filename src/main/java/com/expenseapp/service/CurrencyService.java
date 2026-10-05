@@ -17,7 +17,7 @@ import java.time.Duration;
 /**
  * Döviz kurunu REST API'den (application.properties içindeki currency.api.url) alır ve TL karşılığını
  * hesaplar. Bağlantı hatası, zaman aşımı, HTTP hata kodu, bozuk JSON veya eksik TRY kuru durumlarında
- * kullanıcıya gösterilecek mesajla birlikte IOException fırlatılır.
+ * kullanıcıya gösterilecek mesajla birlikte CurrencyApiException fırlatılır.
  */
 public class CurrencyService {
 
@@ -35,21 +35,22 @@ public class CurrencyService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /** 1 birim para biriminin TL karşılığı. TRY için API çağrılmadan 1 döner. */
-    public BigDecimal getExchangeRate(Currency currency) throws IOException {
+    public BigDecimal getExchangeRate(Currency currency) throws CurrencyApiException {
         if (currency == Currency.TRY) {
             return BigDecimal.ONE;
         }
         String apiUrl = DatabaseConfig.getProperty(API_URL_KEY);
         if (apiUrl == null || apiUrl.isBlank()) {
-            throw new IOException("Yapılandırmada '" + API_URL_KEY + "' değeri eksik.");
+            throw new CurrencyApiException("Yapılandırmada '" + API_URL_KEY + "' değeri eksik.");
         }
         try {
             return fetchRate(apiUrl.trim(), currency);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException(RATE_UNAVAILABLE, e);
+            throw new CurrencyApiException(RATE_UNAVAILABLE, e);
         } catch (IOException | IllegalArgumentException e) {
-            throw new IOException(RATE_UNAVAILABLE, e);
+            // Zaman aşımı (HttpTimeoutException), bağlantı hatası, HTTP hata kodu ve bozuk JSON buraya düşer.
+            throw new CurrencyApiException(RATE_UNAVAILABLE, e);
         }
     }
 

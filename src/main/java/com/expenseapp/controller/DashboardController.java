@@ -3,6 +3,7 @@ package com.expenseapp.controller;
 import com.expenseapp.model.Expense;
 import com.expenseapp.model.User;
 import com.expenseapp.service.ExpenseService;
+import com.expenseapp.service.ExportService;
 import com.expenseapp.util.SessionManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -18,20 +19,27 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DashboardController {
 
+    private static final Logger LOGGER = Logger.getLogger(DashboardController.class.getName());
+    private static final String DATABASE_ERROR = "A database error occurred. Please try again later.";
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     /** TL tutarları ₺1,889.80 biçiminde gösterilir. */
     private static final DecimalFormat TRY_FORMAT = new DecimalFormat("₺#,##0.00", DecimalFormatSymbols.getInstance(Locale.US));
@@ -62,6 +70,7 @@ public class DashboardController {
     private Label messageLabel;
 
     private final ExpenseService expenseService = new ExpenseService();
+    private final ExportService exportService = new ExportService();
 
     @FXML
     private void initialize() {
@@ -100,7 +109,8 @@ public class DashboardController {
             totalLabel.setText(formatTry(expenseService.getUserTotalTry(userId)));
             messageLabel.setText("");
         } catch (SQLException e) {
-            messageLabel.setText("Database error: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Harcamalar yüklenemedi", e);
+            showError(DATABASE_ERROR);
         }
     }
 
@@ -139,10 +149,36 @@ public class DashboardController {
             expenseService.deleteExpense(selected.getId(), SessionManager.getCurrentUser().getId());
             refreshExpenses();
         } catch (IllegalArgumentException e) {
-            messageLabel.setText(e.getMessage());
             refreshExpenses();
+            showError(e.getMessage());
         } catch (SQLException e) {
-            messageLabel.setText("Database error: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Harcama silinemedi", e);
+            showError(DATABASE_ERROR);
+        }
+    }
+
+    /** Yalnızca giriş yapan kullanıcının harcamalarını seçilen CSV dosyasına yazar. */
+    @FXML
+    private void handleExport() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Export CSV");
+        chooser.setInitialFileName("expenses.csv");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv"));
+        File file = chooser.showSaveDialog(expenseTable.getScene().getWindow());
+        if (file == null) {
+            return;
+        }
+
+        try {
+            List<Expense> expenses = expenseService.getUserExpenses(SessionManager.getCurrentUser().getId());
+            exportService.exportExpenses(expenses, file);
+            showSuccess(expenses.size() + " expenses exported to " + file.getName() + ".");
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "CSV için harcamalar okunamadı", e);
+            showError(DATABASE_ERROR);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "CSV dosyası yazılamadı: " + file, e);
+            showError("CSV file could not be saved. Please check the file location and try again.");
         }
     }
 
@@ -157,7 +193,7 @@ public class DashboardController {
             stage.setHeight(600);
             stage.centerOnScreen();
         } catch (IOException e) {
-            messageLabel.setText("Login screen could not be loaded.");
+            showError("Login screen could not be loaded.");
         }
     }
 
@@ -183,8 +219,18 @@ public class DashboardController {
                 refreshExpenses();
             }
         } catch (IOException e) {
-            messageLabel.setText("Expense dialog could not be loaded.");
+            showError("Expense dialog could not be loaded.");
         }
+    }
+
+    private void showError(String message) {
+        messageLabel.getStyleClass().setAll("label", "error-label");
+        messageLabel.setText(message);
+    }
+
+    private void showSuccess(String message) {
+        messageLabel.getStyleClass().setAll("label", "success-label");
+        messageLabel.setText(message);
     }
 
     private static void bindColumn(TableColumn<Expense, String> column, Function<Expense, String> getter) {

@@ -11,7 +11,12 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class ExpenseTrackerApp extends Application {
+
+    private static final Logger LOGGER = Logger.getLogger(ExpenseTrackerApp.class.getName());
 
     @Override
     public void start(Stage stage) {
@@ -21,8 +26,13 @@ public class ExpenseTrackerApp extends Application {
             DatabaseInitializer.initialize();
             root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
         } catch (Exception e) {
-            String message = "Veritabanı bağlantısı başarısız: " + e.getMessage();
-            System.err.println(message);
+            LOGGER.log(Level.SEVERE, "Uygulama başlatılamadı", e);
+            // IllegalStateException mesajları DatabaseConfig'in kendi açıklamalarıdır (ör. eksik application.properties);
+            // PostgreSQL'den gelen ham hata mesajı kullanıcıya gösterilmez.
+            String message = e instanceof IllegalStateException
+                    ? e.getMessage()
+                    : "Veritabanına bağlanılamadı. PostgreSQL sunucusunun çalıştığını ve "
+                            + "application.properties ayarlarını kontrol edip uygulamayı yeniden başlatın.";
             Label status = new Label(message);
             status.setWrapText(true);
             VBox box = new VBox(status);

@@ -11,8 +11,12 @@ import javafx.scene.control.TextField;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RegisterController {
+
+    private static final Logger LOGGER = Logger.getLogger(RegisterController.class.getName());
 
     @FXML
     private TextField usernameField;
@@ -45,7 +49,8 @@ public class RegisterController {
         } catch (IllegalArgumentException e) {
             showError(e.getMessage());
         } catch (SQLException e) {
-            showError("Database error: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Kayıt sırasında veritabanı hatası", e);
+            showError("Unable to create account. Please try again later.");
         }
     }
 

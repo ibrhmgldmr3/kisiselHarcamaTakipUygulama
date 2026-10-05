@@ -6,7 +6,6 @@ import com.expenseapp.model.Category;
 import com.expenseapp.model.Expense;
 import com.expenseapp.util.ValidationUtil;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
@@ -14,15 +13,12 @@ import java.util.List;
 /**
  * Harcama ve kategori işlemleri. Her metot userId alır ve işlemi o kullanıcıyla sınırlar.
  * Doğrulama hataları, kullanıcıya gösterilecek mesajla birlikte IllegalArgumentException
- * olarak fırlatılır; veritabanı hataları SQLException, döviz kuru hataları IOException olarak iletilir.
+ * olarak fırlatılır; veritabanı hataları SQLException, döviz kuru hataları CurrencyApiException olarak iletilir.
  */
 public class ExpenseService {
 
     private static final List<String> DEFAULT_CATEGORIES = List.of(
             "Gıda", "Ulaşım", "Eğlence", "Fatura", "Alışveriş", "Sağlık", "Eğitim", "Diğer");
-    private static final int MAX_DESCRIPTION_LENGTH = 255;
-    /** expenses.amount NUMERIC(12, 2) sütununa sığabilecek en büyük değerin üst sınırı. */
-    private static final BigDecimal MAX_AMOUNT = new BigDecimal("10000000000");
     private static final String EXPENSE_NOT_FOUND = "Expense not found.";
 
     private final ExpenseDAO expenseDAO = new ExpenseDAO();
@@ -50,14 +46,14 @@ public class ExpenseService {
         return categoryDAO.findAllByUserId(userId);
     }
 
-    public Expense createExpense(Expense expense, long userId) throws SQLException, IOException {
+    public Expense createExpense(Expense expense, long userId) throws SQLException, CurrencyApiException {
         expense.setUserId(userId);
         validate(expense);
         applyTryConversion(expense);
         return expenseDAO.create(expense);
     }
 
-    public void updateExpense(Expense expense, long userId) throws SQLException, IOException {
+    public void updateExpense(Expense expense, long userId) throws SQLException, CurrencyApiException {
         expense.setUserId(userId);
         if (expense.getId() == null) {
             throw new IllegalArgumentException(EXPENSE_NOT_FOUND);
@@ -76,32 +72,14 @@ public class ExpenseService {
     }
 
     private void validate(Expense expense) throws SQLException {
-        if (expense.getExpenseDate() == null) {
-            throw new IllegalArgumentException("Please enter a valid date.");
-        }
-        if (ValidationUtil.isBlank(expense.getDescription())) {
-            throw new IllegalArgumentException("Description cannot be empty.");
+        String error = ValidationUtil.validateExpense(expense);
+        if (error != null) {
+            throw new IllegalArgumentException(error);
         }
         expense.setDescription(expense.getDescription().trim());
-        if (expense.getDescription().length() > MAX_DESCRIPTION_LENGTH) {
-            throw new IllegalArgumentException("Description cannot exceed " + MAX_DESCRIPTION_LENGTH + " characters.");
-        }
-        if (expense.getCategoryId() == null
-                || categoryDAO.findById(expense.getCategoryId(), expense.getUserId()).isEmpty()) {
+        // Başka bir kullanıcının kategori id'si gönderilirse kategori seçilmemiş gibi reddedilir.
+        if (categoryDAO.findById(expense.getCategoryId(), expense.getUserId()).isEmpty()) {
             throw new IllegalArgumentException("Please select a category.");
-        }
-        BigDecimal amount = expense.getAmount();
-        if (amount == null || amount.signum() <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero.");
-        }
-        if (amount.stripTrailingZeros().scale() > 2) {
-            throw new IllegalArgumentException("Amount can have at most 2 decimal places.");
-        }
-        if (amount.compareTo(MAX_AMOUNT) >= 0) {
-            throw new IllegalArgumentException("Amount is too large.");
-        }
-        if (expense.getCurrency() == null) {
-            throw new IllegalArgumentException("Please select a currency.");
         }
     }
 
@@ -109,7 +87,7 @@ public class ExpenseService {
      * Güncel kuru CurrencyService'ten alıp exchange_rate ve amount_try alanlarını doldurur.
      * Ekleme ve düzenlemede her seferinde yeniden hesaplanır.
      */
-    private void applyTryConversion(Expense expense) throws IOException {
+    private void applyTryConversion(Expense expense) throws CurrencyApiException {
         BigDecimal rate = currencyService.getExchangeRate(expense.getCurrency());
         expense.setExchangeRate(rate);
         expense.setAmountTry(currencyService.convertToTry(expense.getAmount(), rate));
