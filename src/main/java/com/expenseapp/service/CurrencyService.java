@@ -23,7 +23,7 @@ public class CurrencyService {
 
     private static final String API_URL_KEY = "currency.api.url";
     private static final String RATE_UNAVAILABLE =
-            "Döviz kuru alınamadı. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.";
+            "Exchange rate could not be retrieved. Please check your internet connection and try again.";
     private static final Duration TIMEOUT = Duration.ofSeconds(10);
     /** expenses.exchange_rate NUMERIC(12, 6) ile aynı ölçek. */
     private static final int RATE_SCALE = 6;
@@ -41,7 +41,7 @@ public class CurrencyService {
         }
         String apiUrl = DatabaseConfig.getProperty(API_URL_KEY);
         if (apiUrl == null || apiUrl.isBlank()) {
-            throw new CurrencyApiException("Yapılandırmada '" + API_URL_KEY + "' değeri eksik.");
+            throw new CurrencyApiException("Exchange rate service is not configured (" + API_URL_KEY + ").");
         }
         try {
             return fetchRate(apiUrl.trim(), currency);

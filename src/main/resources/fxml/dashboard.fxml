@@ -12,7 +12,7 @@
       fx:controller="com.expenseapp.controller.DashboardController">
 
     <HBox styleClass="header">
-        <Label text="Expense Tracker" styleClass="header-title"/>
+        <Label text="Personal Expense Tracker" styleClass="header-title"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Label fx:id="welcomeLabel" styleClass="header-user"/>
         <Button text="Logout" onAction="#handleLogout" styleClass="secondary-button"/>
@@ -25,9 +25,9 @@
         </VBox>
 
         <HBox spacing="8" alignment="CENTER_RIGHT">
+            <Button text="+ Add Expense" onAction="#handleAdd" styleClass="primary-button"/>
             <Button fx:id="editButton" text="Edit" onAction="#handleEdit" styleClass="secondary-button"/>
             <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete" styleClass="danger-button"/>
-            <Button text="+ Add Expense" onAction="#handleAdd" styleClass="primary-button"/>
             <Button text="Export CSV" onAction="#handleExport" styleClass="secondary-button"/>
         </HBox>
 

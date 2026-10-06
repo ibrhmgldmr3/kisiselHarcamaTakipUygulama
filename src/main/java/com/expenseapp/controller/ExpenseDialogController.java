@@ -212,7 +212,7 @@ public class ExpenseDialogController {
             return error.getMessage();
         }
         if (error instanceof CurrencyApiException) {
-            // "Döviz kuru alınamadı..." mesajı; asıl neden (timeout, HTTP 500, bozuk JSON) loglanır.
+            // "Exchange rate could not be retrieved..." mesajı; asıl neden (timeout, HTTP 500, bozuk JSON) loglanır.
             LOGGER.log(Level.WARNING, "Döviz kuru alınamadı", error);
             return error.getMessage();
         }

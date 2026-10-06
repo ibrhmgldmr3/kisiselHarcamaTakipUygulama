@@ -31,8 +31,8 @@ public class ExpenseTrackerApp extends Application {
             // PostgreSQL'den gelen ham hata mesajı kullanıcıya gösterilmez.
             String message = e instanceof IllegalStateException
                     ? e.getMessage()
-                    : "Veritabanına bağlanılamadı. PostgreSQL sunucusunun çalıştığını ve "
-                            + "application.properties ayarlarını kontrol edip uygulamayı yeniden başlatın.";
+                    : "Could not connect to the database. Please make sure PostgreSQL is running, "
+                            + "check application.properties and restart the application.";
             Label status = new Label(message);
             status.setWrapText(true);
             VBox box = new VBox(status);
@@ -44,7 +44,7 @@ public class ExpenseTrackerApp extends Application {
         Scene scene = new Scene(root, 440, 560);
         scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
 
-        stage.setTitle("Kişisel Harcama Takip");
+        stage.setTitle("Personal Expense Tracker");
         stage.setScene(scene);
         stage.show();
     }
