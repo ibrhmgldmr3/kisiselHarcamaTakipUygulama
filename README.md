@@ -8,9 +8,14 @@ Her kullanıcı yalnızca kendi harcamalarını görür; TRY, USD ve EUR harcama
 ## Features
 
 - User registration / login
+- Forgot password (kayıtta seçilen güvenlik sorusu ile şifre sıfırlama; cevap BCrypt ile hash'lenir)
+- Session timeout (hareketsiz geçen `session.timeout.minutes` dakika sonunda oturum kapanır, varsayılan 15)
 - Password hashing (BCrypt, veritabanında düz metin şifre tutulmaz)
 - User-specific expenses (her sorgu `user_id` ile sınırlıdır)
 - Expense CRUD (ekleme / düzenleme ayrı pencerede, silme onaylı)
+- Income CRUD (gelirler de kur ile TL'ye çevrilir)
+- Net balance (toplam gelir − toplam harcama, dashboard'da)
+- Reports (tarih aralığına göre gelir/harcama/net özeti, kategori dağılımı, aylık gelir-harcama grafiği)
 - Category management (her kullanıcıya varsayılan kategoriler oluşturulur)
 - TRY / USD / EUR support
 - Live exchange rate API ([Frankfurter](https://frankfurter.dev), API anahtarı gerekmez)
@@ -32,13 +37,13 @@ Her kullanıcı yalnızca kendi harcamalarını görür; TRY, USD ve EUR harcama
 ## Architecture
 
 ```
-FXML (login, register, dashboard, expense-dialog)
+FXML (login, register, forgot-password, dashboard, expense-dialog, income-dialog, reports)
  ↓
 Controller
  ↓
-Service (AuthService, ExpenseService, ExportService)
+Service (AuthService, ExpenseService, IncomeService, ReportService, ExportService)
  ↓
-DAO (UserDAO, CategoryDAO, ExpenseDAO)
+DAO (UserDAO, CategoryDAO, ExpenseDAO, IncomeDAO)
  ↓
 PostgreSQL
 
@@ -50,11 +55,12 @@ REST API (Frankfurter)
 ```
 src/main/java/com/expenseapp/
 ├── config/       DatabaseConfig, DatabaseInitializer
-├── controller/   LoginController, RegisterController, DashboardController, ExpenseDialogController
-├── dao/          UserDAO, CategoryDAO, ExpenseDAO
-├── model/        User, Category, Expense, Currency, CurrencyResponse
-├── service/      AuthService, ExpenseService, CurrencyService, ExportService
-└── util/         PasswordUtil, SessionManager, ValidationUtil
+├── controller/   LoginController, RegisterController, ForgotPasswordController, DashboardController,
+│                 ExpenseDialogController, IncomeDialogController, ReportsController, SessionTimeoutManager
+├── dao/          UserDAO, CategoryDAO, ExpenseDAO, IncomeDAO
+├── model/        User, Category, Expense, Income, CategoryTotal, MonthlyTotal, Currency, CurrencyResponse
+├── service/      AuthService, ExpenseService, IncomeService, ReportService, CurrencyService, ExportService
+└── util/         PasswordUtil, SessionManager, ValidationUtil, FormatUtil
 src/main/resources/
 ├── config/       application.properties.example
 ├── css/          style.css
@@ -77,6 +83,7 @@ Gereksinimler: JDK 17+, PostgreSQL. Maven kurulu olmasına gerek yoktur (`mvnw` 
    db.username=YOUR_USERNAME
    db.password=YOUR_PASSWORD
    currency.api.url=https://api.frankfurter.dev/v1/latest
+   session.timeout.minutes=15
    ```
    `application.properties` `.gitignore` içindedir, repoya eklenmez.
 4. Maven ile çalıştır:
@@ -90,9 +97,10 @@ Gereksinimler: JDK 17+, PostgreSQL. Maven kurulu olmasına gerek yoktur (`mvnw` 
 
 | Tablo        | Kolonlar                                                                                                                         |
 |--------------|----------------------------------------------------------------------------------------------------------------------------------|
-| `users`      | `id`, `username` (unique), `password_hash` (BCrypt), `created_at`                                                                |
+| `users`      | `id`, `username` (unique), `password_hash` (BCrypt), `security_question`, `security_answer_hash` (BCrypt), `created_at`          |
 | `categories` | `id`, `user_id` → users, `name` (kullanıcı başına unique)                                                                        |
 | `expenses`   | `id`, `user_id` → users, `category_id` → categories, `expense_date`, `description`, `amount`, `currency` (TRY/USD/EUR), `exchange_rate`, `amount_try`, `created_at`, `updated_at` |
+| `incomes`    | `id`, `user_id` → users, `income_date`, `description`, `amount`, `currency` (TRY/USD/EUR), `exchange_rate`, `amount_try`, `created_at`, `updated_at` |
 
 - `expenses (category_id, user_id)` → `categories (id, user_id)` bileşik yabancı anahtarı, bir harcamanın başka kullanıcının kategorisine bağlanmasını veritabanı seviyesinde engeller.
 - `amount > 0` ve `currency IN ('TRY','USD','EUR')` CHECK kısıtlarıyla korunur.

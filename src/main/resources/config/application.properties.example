@@ -6,3 +6,6 @@ db.password=YOUR_PASSWORD
 
 # Döviz kuru API'si (Frankfurter, API anahtarı gerektirmez)
 currency.api.url=https://api.frankfurter.dev/v1/latest
+
+# Hareketsiz geçen bu süre (dakika) dolunca oturum kapanır ve giriş ekranına dönülür. Yazılmazsa 15.
+session.timeout.minutes=15

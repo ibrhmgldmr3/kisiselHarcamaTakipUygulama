@@ -35,9 +35,29 @@ CREATE TABLE IF NOT EXISTS expenses (
         FOREIGN KEY (category_id, user_id) REFERENCES categories (id, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS incomes (
+    id            BIGSERIAL      PRIMARY KEY,
+    user_id       BIGINT         NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    income_date   DATE           NOT NULL,
+    description   VARCHAR(255)   NOT NULL,
+    amount        NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+    currency      VARCHAR(3)     NOT NULL CHECK (currency IN ('TRY', 'USD', 'EUR')),
+    -- Harcamalardaki gibi kur ve TL karşılığı kayıt/düzenleme anında Currency API ile doldurulur.
+    exchange_rate NUMERIC(12, 6) NOT NULL CHECK (exchange_rate > 0),
+    amount_try    NUMERIC(14, 2) NOT NULL CHECK (amount_try > 0),
+    created_at    TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Önceki sürümde NOT NULL olarak oluşturulmuş tablolar için (tekrar çalıştırmak güvenlidir)
 ALTER TABLE expenses ALTER COLUMN exchange_rate DROP NOT NULL;
 ALTER TABLE expenses ALTER COLUMN amount_try DROP NOT NULL;
 
+-- Şifremi unuttum için güvenlik sorusu. Cevap şifre gibi BCrypt ile hash'lenir.
+-- Bu özellikten önce kayıt olmuş kullanıcılarda boştur; bu kullanıcılar şifre sıfırlayamaz.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS security_question VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS security_answer_hash VARCHAR(255);
+
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories (user_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_user_id ON expenses (user_id);
+CREATE INDEX IF NOT EXISTS idx_incomes_user_id ON incomes (user_id);

@@ -142,6 +142,15 @@
     -fx-text-fill: #111827;
 }
 
+/* Net durum: gelir harcamadan fazlaysa yeşil, azsa kırmızı */
+.net-positive {
+    -fx-text-fill: #2e7d32;
+}
+
+.net-negative {
+    -fx-text-fill: #c62828;
+}
+
 .table-view {
     -fx-background-color: white;
     -fx-border-color: #e5e7eb;
@@ -155,7 +164,33 @@
     -fx-alignment: center-right;
 }
 
-/* ---------- Harcama penceresi ---------- */
+/* ---------- Rapor ekranı ---------- */
+
+.report-scroll,
+.report-scroll > .viewport {
+    -fx-background-color: #f4f6f8;
+}
+
+.section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2937;
+}
+
+/* Aylık grafikte gelir yeşil, harcama kırmızı */
+.monthly-chart .default-color0.chart-bar,
+.monthly-chart .default-color0.chart-legend-item-symbol {
+    -fx-bar-fill: #16a34a;
+    -fx-background-color: #16a34a;
+}
+
+.monthly-chart .default-color1.chart-bar,
+.monthly-chart .default-color1.chart-legend-item-symbol {
+    -fx-bar-fill: #dc2626;
+    -fx-background-color: #dc2626;
+}
+
+/* ---------- Harcama / gelir penceresi ---------- */
 
 .dialog-form {
     -fx-padding: 24;

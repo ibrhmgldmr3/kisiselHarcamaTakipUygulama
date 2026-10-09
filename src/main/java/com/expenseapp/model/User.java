@@ -7,6 +7,9 @@ public class User {
     private Long id;
     private String username;
     private String passwordHash;
+    /** Şifremi unuttum için; bu özellikten önce kayıt olmuş kullanıcılarda null. */
+    private String securityQuestion;
+    private String securityAnswerHash;
     private LocalDateTime createdAt;
 
     public User() {
@@ -39,6 +42,22 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public String getSecurityQuestion() {
+        return securityQuestion;
+    }
+
+    public void setSecurityQuestion(String securityQuestion) {
+        this.securityQuestion = securityQuestion;
+    }
+
+    public String getSecurityAnswerHash() {
+        return securityAnswerHash;
+    }
+
+    public void setSecurityAnswerHash(String securityAnswerHash) {
+        this.securityAnswerHash = securityAnswerHash;
     }
 
     public LocalDateTime getCreatedAt() {

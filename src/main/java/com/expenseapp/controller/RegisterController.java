@@ -2,9 +2,11 @@ package com.expenseapp.controller;
 
 import com.expenseapp.service.AuthService;
 import com.expenseapp.util.ValidationUtil;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -25,26 +27,40 @@ public class RegisterController {
     @FXML
     private PasswordField confirmPasswordField;
     @FXML
+    private ComboBox<String> securityQuestionComboBox;
+    @FXML
+    private TextField securityAnswerField;
+    @FXML
     private Label messageLabel;
 
     private final AuthService authService = new AuthService();
 
     @FXML
+    private void initialize() {
+        securityQuestionComboBox.setItems(FXCollections.observableArrayList(AuthService.SECURITY_QUESTIONS));
+    }
+
+    @FXML
     private void handleRegister() {
         String username = usernameField.getText();
         String password = passwordField.getText();
+        String securityQuestion = securityQuestionComboBox.getValue();
+        String securityAnswer = securityAnswerField.getText();
 
-        String error = ValidationUtil.validateRegistration(username, password, confirmPasswordField.getText());
+        String error = ValidationUtil.validateRegistration(username, password, confirmPasswordField.getText(),
+                securityQuestion, securityAnswer);
         if (error != null) {
             showError(error);
             return;
         }
 
         try {
-            authService.register(username, password);
+            authService.register(username, password, securityQuestion, securityAnswer);
             usernameField.clear();
             passwordField.clear();
             confirmPasswordField.clear();
+            securityQuestionComboBox.setValue(null);
+            securityAnswerField.clear();
             showSuccess("Account created. You can now log in.");
         } catch (IllegalArgumentException e) {
             showError(e.getMessage());

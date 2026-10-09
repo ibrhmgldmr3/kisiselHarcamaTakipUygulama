@@ -1,6 +1,7 @@
 package com.expenseapp.dao;
 
 import com.expenseapp.config.DatabaseConfig;
+import com.expenseapp.model.CategoryTotal;
 import com.expenseapp.model.Currency;
 import com.expenseapp.model.Expense;
 
@@ -11,9 +12,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 
 /**
  * Tüm sorgular user_id ile sınırlandırılır. Güncelleme ve silmede de "id = ? AND user_id = ?"
@@ -126,6 +130,54 @@ public class ExpenseDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 rs.next();
                 return rs.getBigDecimal(1);
+            }
+        }
+    }
+
+    /** Tarih aralığındaki (sınırlar dahil) harcamaların kategori bazında TL toplamları, büyükten küçüğe. */
+    public List<CategoryTotal> getTotalsByCategory(long userId, LocalDate from, LocalDate to) throws SQLException {
+        String sql = """
+                SELECT c.name, SUM(e.amount_try) AS total
+                FROM expenses e
+                JOIN categories c ON c.id = e.category_id
+                WHERE e.user_id = ? AND e.expense_date BETWEEN ? AND ? AND e.amount_try IS NOT NULL
+                GROUP BY c.name
+                ORDER BY total DESC, c.name
+                """;
+        try (Connection connection = DatabaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setObject(2, from);
+            ps.setObject(3, to);
+            try (ResultSet rs = ps.executeQuery()) {
+                List<CategoryTotal> totals = new ArrayList<>();
+                while (rs.next()) {
+                    totals.add(new CategoryTotal(rs.getString("name"), rs.getBigDecimal("total")));
+                }
+                return totals;
+            }
+        }
+    }
+
+    /** Tarih aralığındaki (sınırlar dahil) harcamaların ay bazında TL toplamları. */
+    public Map<YearMonth, BigDecimal> getMonthlyTotals(long userId, LocalDate from, LocalDate to) throws SQLException {
+        String sql = """
+                SELECT CAST(date_trunc('month', expense_date) AS DATE) AS month, SUM(amount_try) AS total
+                FROM expenses
+                WHERE user_id = ? AND expense_date BETWEEN ? AND ? AND amount_try IS NOT NULL
+                GROUP BY month
+                """;
+        try (Connection connection = DatabaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setObject(2, from);
+            ps.setObject(3, to);
+            try (ResultSet rs = ps.executeQuery()) {
+                Map<YearMonth, BigDecimal> totals = new TreeMap<>();
+                while (rs.next()) {
+                    totals.put(YearMonth.from(rs.getObject("month", LocalDate.class)), rs.getBigDecimal("total"));
+                }
+                return totals;
             }
         }
     }

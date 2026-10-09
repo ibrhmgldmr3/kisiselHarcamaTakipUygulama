@@ -1,8 +1,10 @@
 package com.expenseapp.util;
 
 import com.expenseapp.model.Expense;
+import com.expenseapp.model.Income;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /** Form ve servis doğrulamaları. Hata varsa kullanıcıya gösterilecek mesajı, yoksa null döndürür. */
 public final class ValidationUtil {
@@ -45,11 +47,24 @@ public final class ValidationUtil {
         return validatePassword(password);
     }
 
-    public static String validateRegistration(String username, String password, String confirmPassword) {
+    public static String validateRegistration(String username, String password, String confirmPassword,
+                                              String securityQuestion, String securityAnswer) {
         String error = validateUsername(username);
         if (error == null) {
-            error = validatePassword(password);
+            error = validatePasswordConfirmation(password, confirmPassword);
         }
+        if (error != null) {
+            return error;
+        }
+        if (isBlank(securityQuestion)) {
+            return "Please select a security question.";
+        }
+        return validateSecurityAnswer(securityAnswer);
+    }
+
+    /** Şifre ve tekrarını doğrular (kayıt ve şifremi unuttum ekranları). */
+    public static String validatePasswordConfirmation(String password, String confirmPassword) {
+        String error = validatePassword(password);
         if (error != null) {
             return error;
         }
@@ -58,6 +73,13 @@ public final class ValidationUtil {
         }
         if (!password.equals(confirmPassword)) {
             return "Passwords do not match.";
+        }
+        return null;
+    }
+
+    public static String validateSecurityAnswer(String securityAnswer) {
+        if (isBlank(securityAnswer)) {
+            return "Security answer cannot be empty.";
         }
         return null;
     }
@@ -123,6 +145,35 @@ public final class ValidationUtil {
         }
         if (expense.getCurrency() == null) {
             return "Please select a currency.";
+        }
+        return null;
+    }
+
+    public static String validateIncome(Income income) {
+        if (income.getIncomeDate() == null) {
+            return "Please enter a valid date.";
+        }
+        String error = validateDescription(income.getDescription());
+        if (error != null) {
+            return error;
+        }
+        error = validateAmount(income.getAmount());
+        if (error != null) {
+            return error;
+        }
+        if (income.getCurrency() == null) {
+            return "Please select a currency.";
+        }
+        return null;
+    }
+
+    /** Rapor ekranındaki tarih aralığını doğrular. */
+    public static String validateDateRange(LocalDate from, LocalDate to) {
+        if (from == null || to == null) {
+            return "Please select a start and end date.";
+        }
+        if (from.isAfter(to)) {
+            return "Start date cannot be after end date.";
         }
         return null;
     }

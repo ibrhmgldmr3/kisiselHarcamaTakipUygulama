@@ -55,6 +55,16 @@ public class LoginController {
         navigateTo("/fxml/register.fxml");
     }
 
+    @FXML
+    private void goToForgotPassword() {
+        navigateTo("/fxml/forgot-password.fxml");
+    }
+
+    /** Giriş ekranına dışarıdan dönüldüğünde (ör. oturum süresi dolduğunda) bilgi mesajı gösterir. */
+    public void showMessage(String message) {
+        messageLabel.setText(message);
+    }
+
     /** @return ekran yüklendiyse true */
     private boolean navigateTo(String fxmlPath) {
         try {

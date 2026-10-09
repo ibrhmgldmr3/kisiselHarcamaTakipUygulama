@@ -24,6 +24,8 @@
 
         <Button text="LOGIN" onAction="#handleLogin" defaultButton="true"
                 styleClass="primary-button" maxWidth="Infinity"/>
+
+        <Hyperlink text="Forgot password?" onAction="#goToForgotPassword"/>
     </VBox>
 
     <Label text="Don't have an account?" styleClass="hint-label"/>

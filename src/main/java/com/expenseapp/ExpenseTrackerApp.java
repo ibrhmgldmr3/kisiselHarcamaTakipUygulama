@@ -2,6 +2,7 @@ package com.expenseapp;
 
 import com.expenseapp.config.DatabaseConfig;
 import com.expenseapp.config.DatabaseInitializer;
+import com.expenseapp.controller.SessionTimeoutManager;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -25,6 +26,7 @@ public class ExpenseTrackerApp extends Application {
             DatabaseConfig.testConnection();
             DatabaseInitializer.initialize();
             root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
+            SessionTimeoutManager.start(stage);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Uygulama başlatılamadı", e);
             // IllegalStateException mesajları DatabaseConfig'in kendi açıklamalarıdır (ör. eksik application.properties);
@@ -41,7 +43,7 @@ public class ExpenseTrackerApp extends Application {
         }
 
         // Ekran geçişlerinde yalnızca root değiştiği için stil dosyası tüm ekranlarda geçerli kalır.
-        Scene scene = new Scene(root, 440, 560);
+        Scene scene = new Scene(root, 440, 660);
         scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
 
         stage.setTitle("Personal Expense Tracker");
